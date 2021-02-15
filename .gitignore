@@ -10,6 +10,9 @@ __pycache__/
 Scripts/
 Lib/
 
+# Ignoring config files
+*.cfg
+
 # Distribution / packaging
 .Python
 build/
