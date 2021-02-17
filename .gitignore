@@ -10,6 +10,9 @@ __pycache__/
 Scripts/
 Lib/
 
+# Ignoring the token file
+token.txt
+
 # Ignoring config files
 *.cfg
 
