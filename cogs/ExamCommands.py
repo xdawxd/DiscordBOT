@@ -24,7 +24,7 @@ class ExamCommands(commands.Cog):
 			emoji = random.choice(emojis)
 			await msg.add_reaction(emoji)
 
-			data = {msg.author: [msg.content, emoji]}
+			data = {msg.author.id: [msg.content, emoji]}
 			emojis.remove(emoji)
 
 			with open('data.txt', 'a+', encoding='utf-8') as f:
@@ -36,13 +36,14 @@ class ExamCommands(commands.Cog):
 					write_data(data)
 
 					for key, value in content.items():
-						if int(data[msg.author][0]) == int(value[0]):
-							await ctx.send(f'{msg.author.mention} oraz {key} sa w tej samej grupie.')
+						if data[msg.author.id][0] == str(value[0]):
+							await ctx.send(f'{msg.author.mention} oraz <@{key}> sa w tej samej grupie.')
 
-							# TODO -> figure out how to mention the other user
 							# fix the bug: the program works only if the users post one after another
 							# and have matchin groups.
 							# If someone posts -> 123 -> 335 -> 123 the bot wont work.
+
+							# make a dictionary with used emojis and user id's as keys
 
 				else:
 					write_data(data)
