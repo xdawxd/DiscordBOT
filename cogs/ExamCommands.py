@@ -37,8 +37,12 @@ class ExamCommands(commands.Cog):
 
 					for key, value in content.items():
 						if int(data[msg.author][0]) == int(value[0]):
-							# print(f'{msg.author} oraz {key} sa w tej samej grupie.')
-							await ctx.send(f'{msg.author} oraz {key} sa w tej samej grupie.')
+							await ctx.send(f'{msg.author.mention} oraz {key} sa w tej samej grupie.')
+
+							# TODO -> figure out how to mention the other user
+							# fix the bug: the program works only if the users post one after another
+							# and have matchin groups.
+							# If someone posts -> 123 -> 335 -> 123 the bot wont work.
 
 				else:
 					write_data(data)
