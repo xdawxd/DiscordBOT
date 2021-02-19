@@ -1,4 +1,5 @@
-import re  # add a regex to the keyword
+import os
+import random
 import discord
 from discord.ext import commands
 
@@ -18,23 +19,40 @@ class ExamCommands(commands.Cog):
 	def __init__(self, client):
 		self.client = client
 
-	@commands.command(name='react')
-	@commands.has_permissions(manage_messages=True)  # We can change that later so every student can use that function
-	async def add_reactions(self, ctx):
-		await ctx.send('Command is running.')
+	@commands.Cog.listener()
+	async def on_message(self, msg):
+		ctx = await self.client.get_context(msg)
 
-		keywords = {'A': '🇦', 'B': '🇧', 'C': '🇨', 'D': '🇩', 'E': '🇪', 'F': '🇫'}
-		channel = self.client.get_channel(809235905884979263)
+		def write_data(data):
+			for key, value in data.items():
+				f.write(f'{key}: {str(value[0])} {str(value[1])}\n')
 
-		while True:
-			messages = await channel.history(limit=200).flatten()
+		with open('emojis.txt', encoding='utf-8') as f:
+			emojis = [i.strip().split(' ')[0].strip('\\')[0] for i in f.readlines()]
 
-			for message in messages:
-				for keyword in keywords:
-					if keyword in message.content and message.attachments:
-						await message.add_reaction(keywords[keyword])
+		if msg.attachments:
+			emoji = random.choice(emojis)
+			await msg.add_reaction(emoji)
 
-		print('Done!')
+			data = {msg.author: [msg.content, emoji]}
+			emojis.remove(emoji)
+
+			with open('data.txt', 'a+', encoding='utf-8') as f:
+				if os.path.getsize('data.txt'):
+					f.seek(0)
+					f_formated = [i.strip().split(':') for i in f.readlines()]
+					content = {item[0]: item[1].lstrip().split(' ') for item in f_formated}
+
+					write_data(data)
+
+					for key, value in content.items():
+						if int(data[msg.author][0]) == int(value[0]):
+							# print(f'{msg.author} oraz {key} sa w tej samej grupie.')
+							await ctx.send(f'{msg.author} oraz {key} sa w tej samej grupie.')
+
+				else:
+					write_data(data)
+									
 
 def setup(client):
 	client.add_cog(ExamCommands(client))
