@@ -65,6 +65,6 @@ class ExamCommands(commands.Cog):
 							await msg.clear_reaction(emoji)
 							await msg.add_reaction(value[1])				
 										
-							self.edit_data(file, value[1])
+							# self.edit_data(file, value[1])
 def setup(client):
 	client.add_cog(ExamCommands(client))
