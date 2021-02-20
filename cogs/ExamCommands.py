@@ -32,13 +32,14 @@ class ExamCommands(commands.Cog):
 		# 		file.truncate(0)
 
 		# 		self.write_data(content, file)
+		pass
 
 
 
 	@commands.Cog.listener()
 	async def on_message(self, msg):
 		author_id = msg.author.id
-		channel = msg.channel
+		channel = self.client.get_channel(812498438699614209)
 
 		with open('emojis.txt', encoding='utf-8') as file:
 			emojis = [i.strip().split(' ')[0].strip('\\')[0] for i in file.readlines()]
@@ -66,5 +67,6 @@ class ExamCommands(commands.Cog):
 							await msg.add_reaction(value[1])				
 										
 							# self.edit_data(file, value[1])
+							# content = {'12312312': 'emotka', '123123': 'emotka'}
 def setup(client):
 	client.add_cog(ExamCommands(client))
