@@ -30,10 +30,6 @@ class ExamCommands(commands.Cog):
 		file.truncate(0)
 		self.write_data(content, file)
 
-	# @classmethod
-	# def update_emojis(cls, emoji):
-	# 	cls.emojis.remove(emoji)
-
 	@commands.Cog.listener()
 	async def on_message(self, msg):
 		author_id = msg.author.id
@@ -45,9 +41,6 @@ class ExamCommands(commands.Cog):
 			data = {author_id: [msg.content, emoji]}
 
 			self.emojis.remove(emoji)
-
-			if emoji in self.emojis:
-				print('aaaa')
 
 			await msg.add_reaction(emoji)
 
