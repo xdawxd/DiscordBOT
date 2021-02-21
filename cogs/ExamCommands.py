@@ -21,25 +21,21 @@ class ExamCommands(commands.Cog):
 		content = {item[0]: item[1].lstrip().split(' ') for item in f_formated}
 		return content
 
-	@staticmethod
-	def edit_data(id, emoji):  # edit the emoji saved in data.txt so its the same as the user in their group
-		# with open('data.txt', encoding='utf-8') as file:
-		# 	content = self.read_data(file)
+	def edit_data(self, file, id, emoji):  # edit the emoji saved in data.txt so its the same as the user in their group
+		content = self.read_data(file)
 
-		# 	for key, value in content.items():
-		# 		content[id][1] = emoji
+		content[id][1] = emoji
 
-		# 		file.truncate(0)
+		file.truncate(0)
 
-		# 		self.write_data(content, file)
-		pass
-
+		self.write_data(content, file)
 
 
 	@commands.Cog.listener()
 	async def on_message(self, msg):
 		author_id = msg.author.id
-		channel = self.client.get_channel(812498438699614209)
+		channel = self.client.get_channel(812498438699614209)  # channel id
+		ctx = await self.client.get_context(msg)
 
 		with open('emojis.txt', encoding='utf-8') as file:
 			emojis = [i.strip().split(' ')[0].strip('\\')[0] for i in file.readlines()]
@@ -64,9 +60,20 @@ class ExamCommands(commands.Cog):
 						if data[author_id][0] == str(value[0]):
 							await channel.send(f'{msg.author.mention} oraz <@{key}> sa w tej samej grupie.')
 							await msg.clear_reaction(emoji)
-							await msg.add_reaction(value[1])				
-										
-							# self.edit_data(file, value[1])
-							# content = {'12312312': 'emotka', '123123': 'emotka'}
+							await msg.add_reaction(value[1])		
+
+							guild = ctx.guild
+							role_name = f'Grupa: {value[0]}.'
+
+							if role_name not in guild.roles:
+								role = discord.utils.get(guild.roles, name=role_name)
+								user = msg.author
+
+								await guild.create_role(name=role_name)
+								await user.add_roles(role)
+
+							self.edit_data(file, str(author_id), value[1])
+							
+
 def setup(client):
 	client.add_cog(ExamCommands(client))
