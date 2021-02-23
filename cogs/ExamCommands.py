@@ -6,6 +6,7 @@ from discord.ext import commands
 
 class ExamCommands(commands.Cog):
 	groups = {}
+	# messages = []
 	with open('emojis.txt', encoding='utf-8') as file:
 		emojis = [i.strip().split(' ')[0].strip('\\')[0] for i in file.readlines()]
 
@@ -36,6 +37,7 @@ class ExamCommands(commands.Cog):
 		author_id = msg.author.id
 		channel = self.client.get_channel(812498438699614209)  # channel id
 		ctx = await self.client.get_context(msg)
+		# self.messages = await ctx.channel.history(limit=200).flatten()
 
 		if msg.attachments and len(msg.content) > 0:
 			emoji = random.choice(self.emojis)
@@ -80,6 +82,10 @@ class ExamCommands(commands.Cog):
 					message = ''
 					for user in users:
 						message += f'<@{user}>, '
+
+					# for mess_d in self.messages:
+					# 	if str(msg.author) in mess_d.content:
+					# 		self.client.delete_message(mess_d) 	
 
 					await channel.send(f'{message} sa w tej samej grupie.')
 							
