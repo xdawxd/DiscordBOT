@@ -5,6 +5,7 @@ from discord.ext import commands
 
 
 class ExamCommands(commands.Cog):
+	groups = {}
 	with open('emojis.txt', encoding='utf-8') as file:
 		emojis = [i.strip().split(' ')[0].strip('\\')[0] for i in file.readlines()]
 
@@ -41,7 +42,6 @@ class ExamCommands(commands.Cog):
 			data = {author_id: [msg.content, emoji]}
 
 			self.emojis.remove(emoji)
-
 			await msg.add_reaction(emoji)
 
 			with open('data.txt', 'a+', encoding='utf-8') as file:
@@ -50,14 +50,19 @@ class ExamCommands(commands.Cog):
 
 				else:
 					content = self.read_data(file)
-
 					self.write_data(data, file)
 
+					if author_id not in self.groups:
+						self.groups[str(author_id)] = msg.content
+
 					for key, value in content.items():
-						if data[author_id][0] == str(value[0]): 
-							await channel.send(f'{msg.author.mention} oraz <@{key}> sa w tej samej grupie.')
+						group = str(value[0])
+						if data[author_id][0] == group:
+							if key not in self.groups:
+								self.groups[key] = group
+
 							await msg.clear_reaction(emoji)
-							await msg.add_reaction(value[1])		
+							await msg.add_reaction(value[1])
 
 							# guild = ctx.guild
 							# role_name = f'Grupa: {value[0]}.'
@@ -70,6 +75,13 @@ class ExamCommands(commands.Cog):
 							# 	await user.add_roles(role)
 
 							self.edit_data(file, str(author_id), value[1])
+
+					users = [user for (user, group) in self.groups.items()]
+					message = ''
+					for user in users:
+						message += f'<@{user}>, '
+
+					await channel.send(f'{message} sa w tej samej grupie.')
 							
 
 def setup(client):
