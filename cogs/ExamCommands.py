@@ -103,7 +103,7 @@ class ExamCommands(commands.Cog):
 			guild = self.client.get_guild(809235903825707018)
 			msg = reaction.message
 			role = discord.utils.get(guild.roles, name=msg.content)
-			await user.add_roles(role)
+			await user.add_roles(role)  # test on a random created role.
 
 	@commands.Cog.listener()
 	async def on_reaction_remove(self, reaction, user):  # Removes a role on reaction
