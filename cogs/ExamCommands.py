@@ -14,6 +14,10 @@ class ExamCommands(commands.Cog):
 		self.client = client
 
 	@staticmethod
+	def add_role(user, guild, role_name):
+		pass
+
+	@staticmethod
 	def write_data(data, file):
 		for key, value in data.items():
 			file.write(f'{key}: {str(value[0])} {str(value[1])}\n')
@@ -34,9 +38,10 @@ class ExamCommands(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_message(self, msg):
-		author_id = msg.author.id
-		channel = self.client.get_channel(812498438699614209)  # channel id
+		guild = self.client.get_guild(809235903825707018)  # Server id
+		channel = self.client.get_channel(812498438699614209)  # Channel id
 		ctx = await self.client.get_context(msg)
+		author_id = msg.author.id
 		# self.messages = await ctx.channel.history(limit=200).flatten()
 
 		if msg.attachments and len(msg.content) > 0:
@@ -65,18 +70,21 @@ class ExamCommands(commands.Cog):
 
 							await msg.clear_reaction(emoji)
 							await msg.add_reaction(value[1])
-
-							# guild = ctx.guild
-							# role_name = f'Grupa: {value[0]}.'
-
-							# if role_name not in guild.roles:
-							# 	role = discord.utils.get(guild.roles, name=role_name)
-							# 	user = msg.author
-
-							# 	await guild.create_role(name=role_name)
-							# 	await user.add_roles(role)
-
 							self.edit_data(file, str(author_id), value[1])
+
+					role_name = f'Grupa: {value[0]}'
+					role_names = [gn.name for gn in guild.roles]
+					
+					if role_name not in role_names:
+						await guild.create_role(name=role_name)
+						role = discord.utils.get(guild.roles, name=role_name)
+						for user_id, group in self.groups.items():  # bug
+							member = guild.get_member(int(user_id))
+							await member.add_roles(role)
+
+					else:
+						role = discord.utils.get(guild.roles, name=role_name)
+						await msg.author.add_roles(role)
 
 					users = [user for (user, group) in self.groups.items()]
 					message = ''
@@ -88,7 +96,19 @@ class ExamCommands(commands.Cog):
 					# 		self.client.delete_message(mess_d) 	
 
 					await channel.send(f'{message} sa w tej samej grupie.')
-							
+
+	@commands.Cog.listener()
+	async def on_reaction_add(self, reaction, user):  # Adds a role on reaction.
+		if reaction.emoji and user != self.client.user:
+			guild = self.client.get_guild(809235903825707018)
+			msg = reaction.message
+			role = discord.utils.get(guild.roles, name=msg.content)
+			await user.add_roles(role)
+
+	@commands.Cog.listener()
+	async def on_reaction_remove(self, reaction, user):  # Removes a role on reaction
+		if reaction.emoji:
+			print(f'{user} unreacted.')
 
 def setup(client):
 	client.add_cog(ExamCommands(client))
