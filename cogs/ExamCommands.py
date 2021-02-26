@@ -73,9 +73,7 @@ class ExamCommands(commands.Cog):
 							self.edit_data(file, str(author_id), value[1])
 
 							role_name = f'Grupa: {value[0]}'
-							print(role_name)
 							role_names = [gn.name for gn in guild.roles]
-							print(role_names)
 							
 							if role_name not in role_names:
 								await guild.create_role(name=role_name)
