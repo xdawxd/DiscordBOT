@@ -24,7 +24,7 @@ class ExamCommands(commands.Cog):
 		content = {item[0]: item[1].lstrip().split(' ') for item in f_formated}
 		return content
 
-	def edit_messages(self, channel):
+	def edit_messages(self, channel):  # TODO
 		pass
 
 	def edit_data(self, file, id, emoji):
