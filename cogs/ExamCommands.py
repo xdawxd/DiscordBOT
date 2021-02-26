@@ -25,7 +25,7 @@ class ExamCommands(commands.Cog):
 		content = {item[0]: item[1].lstrip().split(' ') for item in f_formated}
 		return content
 
-	def edit_data(self, file, id, emoji):  # edit the emoji saved in data.txt so its the same as the user in their group
+	def edit_data(self, file, id, emoji):
 		content = self.read_data(file)
 		content[id][1] = emoji
 
@@ -43,9 +43,16 @@ class ExamCommands(commands.Cog):
 		if msg.attachments and len(msg.content) > 0:
 			emoji = random.choice(self.emojis)
 			data = {author_id: [msg.content, emoji]}
+			role_name = f'Grupa: {msg.content}'
+			role_names = [gn.name for gn in guild.roles]
 
 			self.emojis.remove(emoji)
 			await msg.add_reaction(emoji)
+
+			if role_name not in role_names:
+				await guild.create_role(name=role_name)
+				role = discord.utils.get(guild.roles, name=role_name)
+				await msg.author.add_roles(role)
 
 			with open('data.txt', 'a+', encoding='utf-8') as file:
 				if not os.path.getsize('data.txt'):
@@ -68,21 +75,6 @@ class ExamCommands(commands.Cog):
 							await msg.add_reaction(value[1])
 							self.edit_data(file, str(author_id), value[1])
 
-							# Fix the roles so it adds a new every 'one' user
-							role_name = f'Grupa: {value[0]}'
-							role_names = [gn.name for gn in guild.roles]
-							
-							if role_name not in role_names:
-								await guild.create_role(name=role_name)
-								role = discord.utils.get(guild.roles, name=role_name)
-								for user_id, group in self.groups.items():  # bug
-									member = guild.get_member(int(user_id))
-									await member.add_roles(role)
-
-							else:
-								role = discord.utils.get(guild.roles, name=role_name)
-								await msg.author.add_roles(role)
-
 					users = [user for (user, group) in self.groups.items()]
 					message = ''
 					for user in users:
@@ -98,14 +90,17 @@ class ExamCommands(commands.Cog):
 	async def on_reaction_add(self, reaction, user):
 		if reaction.emoji and user != self.client.user:
 			guild = self.client.get_guild(809235903825707018)
-			msg = reaction.message
-			role = discord.utils.get(guild.roles, name=msg.content)
-			await user.add_roles(role)  # test on a random created role.
+			role_name = f'Grupa: {reaction.message.content}'
+			role = discord.utils.get(guild.roles, name=role_name)
+			await user.add_roles(role)
 
 	@commands.Cog.listener()
-	async def on_reaction_remove(self, reaction, user):  # Removes a role on reaction
+	async def on_reaction_remove(self, reaction, user):
 		if reaction.emoji:
-			print(f'{user} unreacted.')
+			guild = self.client.get_guild(809235903825707018)
+			role_name = f'Grupa: {reaction.message.content}'
+			role = discord.utils.get(guild.roles, name=role_name)
+			await user.remove_roles(role)
 
 def setup(client):
 	client.add_cog(ExamCommands(client))
