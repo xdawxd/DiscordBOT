@@ -14,10 +14,6 @@ class ExamCommands(commands.Cog):
 		self.client = client
 
 	@staticmethod
-	def add_role(user, guild, role_name):
-		pass
-
-	@staticmethod
 	def write_data(data, file):
 		for key, value in data.items():
 			file.write(f'{key}: {str(value[0])} {str(value[1])}\n')
@@ -72,6 +68,7 @@ class ExamCommands(commands.Cog):
 							await msg.add_reaction(value[1])
 							self.edit_data(file, str(author_id), value[1])
 
+							# Fix the roles so it adds a new every 'one' user
 							role_name = f'Grupa: {value[0]}'
 							role_names = [gn.name for gn in guild.roles]
 							
@@ -98,7 +95,7 @@ class ExamCommands(commands.Cog):
 					await channel.send(f'{message} sa w tej samej grupie.')
 
 	@commands.Cog.listener()
-	async def on_reaction_add(self, reaction, user):  # Adds a role on reaction.
+	async def on_reaction_add(self, reaction, user):
 		if reaction.emoji and user != self.client.user:
 			guild = self.client.get_guild(809235903825707018)
 			msg = reaction.message
