@@ -72,19 +72,21 @@ class ExamCommands(commands.Cog):
 							await msg.add_reaction(value[1])
 							self.edit_data(file, str(author_id), value[1])
 
-					role_name = f'Grupa: {value[0]}'
-					role_names = [gn.name for gn in guild.roles]
-					
-					if role_name not in role_names:
-						await guild.create_role(name=role_name)
-						role = discord.utils.get(guild.roles, name=role_name)
-						for user_id, group in self.groups.items():  # bug
-							member = guild.get_member(int(user_id))
-							await member.add_roles(role)
+							role_name = f'Grupa: {value[0]}'
+							print(role_name)
+							role_names = [gn.name for gn in guild.roles]
+							print(role_names)
+							
+							if role_name not in role_names:
+								await guild.create_role(name=role_name)
+								role = discord.utils.get(guild.roles, name=role_name)
+								for user_id, group in self.groups.items():  # bug
+									member = guild.get_member(int(user_id))
+									await member.add_roles(role)
 
-					else:
-						role = discord.utils.get(guild.roles, name=role_name)
-						await msg.author.add_roles(role)
+							else:
+								role = discord.utils.get(guild.roles, name=role_name)
+								await msg.author.add_roles(role)
 
 					users = [user for (user, group) in self.groups.items()]
 					message = ''
