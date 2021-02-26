@@ -6,7 +6,6 @@ from discord.ext import commands
 
 class ExamCommands(commands.Cog):
 	groups = {}
-	# messages = []
 	with open('emojis.txt', encoding='utf-8') as file:
 		emojis = [i.strip().split(' ')[0].strip('\\')[0] for i in file.readlines()]
 
@@ -25,6 +24,9 @@ class ExamCommands(commands.Cog):
 		content = {item[0]: item[1].lstrip().split(' ') for item in f_formated}
 		return content
 
+	def edit_messages(self, channel):
+		pass
+
 	def edit_data(self, file, id, emoji):
 		content = self.read_data(file)
 		content[id][1] = emoji
@@ -34,10 +36,9 @@ class ExamCommands(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_message(self, msg):
-		guild = self.client.get_guild(809235903825707018)  # Server id
-		channel = self.client.get_channel(812498438699614209)  # Channel id
-		ctx = await self.client.get_context(msg)
+		channel = self.client.get_channel(812498438699614209)  # id of an channel the message is send to
 		author_id = msg.author.id
+		guild = msg.guild
 
 		if msg.attachments and len(msg.content) > 0:
 			emoji = random.choice(self.emojis)
@@ -50,6 +51,9 @@ class ExamCommands(commands.Cog):
 
 			if role_name not in role_names:
 				await guild.create_role(name=role_name)
+				role = discord.utils.get(guild.roles, name=role_name)
+				await msg.author.add_roles(role)
+			else:
 				role = discord.utils.get(guild.roles, name=role_name)
 				await msg.author.add_roles(role)
 
@@ -79,23 +83,35 @@ class ExamCommands(commands.Cog):
 					for user in users:
 						message += f'<@{user}>, '
 
-					await channel.send(f'{message} sa w tej samej grupie.')
+					await channel.send(f'{message} sa w \'{role_name}\'')
 
 	@commands.Cog.listener()
 	async def on_reaction_add(self, reaction, user):
 		if reaction.emoji and user != self.client.user:
-			guild = self.client.get_guild(809235903825707018)
-			role_name = f'Grupa: {reaction.message.content}'
-			role = discord.utils.get(guild.roles, name=role_name)
+			msg = reaction.message
+			role_name = f'Grupa: {msg.content}'
+			role = discord.utils.get(msg.guild.roles, name=role_name)
 			await user.add_roles(role)
 
 	@commands.Cog.listener()
 	async def on_reaction_remove(self, reaction, user):
 		if reaction.emoji:
-			guild = self.client.get_guild(809235903825707018)
-			role_name = f'Grupa: {reaction.message.content}'
-			role = discord.utils.get(guild.roles, name=role_name)
+			msg = reaction.message
+			role_name = f'Grupa: {msg.content}'
+			role = discord.utils.get(msg.guild.roles, name=role_name)
 			await user.remove_roles(role)
+
+	@commands.has_permissions(manage_roles=True, ban_members=True)
+	@commands.command()
+	async def delete_roles(self, ctx):
+		guild = ctx.message.guild
+		roles = [role.name for role in ctx.message.guild.roles]
+		for role_name in roles:
+			if role_name.startswith('Grupa: '):
+				role = discord.utils.get(guild.roles, name=role_name)
+				await role.delete()
+		await ctx.message.channel.send('Usunieto wszystkie grupy.')
+
 
 def setup(client):
 	client.add_cog(ExamCommands(client))
