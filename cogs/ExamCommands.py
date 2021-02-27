@@ -40,11 +40,18 @@ class ExamCommands(commands.Cog):
 		author_id = msg.author.id
 		guild = msg.guild
 
-		if msg.attachments and len(msg.content) > 0:
-			emoji = random.choice(self.emojis)
-			data = {author_id: [msg.content, emoji]}
-			role_name = f'Grupa: {msg.content}'
-			role_names = [gn.name for gn in guild.roles]
+		role_names = [gn.name for gn in guild.roles]
+		emoji = random.choice(self.emojis)
+
+		if msg.attachments:
+			if msg.attachments and len(msg.content):
+				data = {author_id: [msg.content, emoji]}
+				role_name = f'Grupa: {msg.content}'
+
+			if msg.attachments and len(msg.content) == 0:
+				random_group = random.randint(1, 1000000)
+				data = {author_id: [random_group, emoji]}
+				role_name = f'Grupa: {random_group}'
 
 			self.emojis.remove(emoji)
 			await msg.add_reaction(emoji)
@@ -80,26 +87,39 @@ class ExamCommands(commands.Cog):
 
 					users = [user for (user, group) in self.groups.items()]
 					message = ''
+					counter = 0
 					for user in users:
 						message += f'<@{user}>, '
-
-					await channel.send(f'{message} sa w \'{role_name}\'')
+						counter += 1
+					if counter > 1:
+						await channel.send(f'{message} sa w \'{role_name}\'')
 
 	@commands.Cog.listener()
 	async def on_reaction_add(self, reaction, user):
 		if reaction.emoji and user != self.client.user:
-			msg = reaction.message
-			role_name = f'Grupa: {msg.content}'
-			role = discord.utils.get(msg.guild.roles, name=role_name)
-			await user.add_roles(role)
+			msg_author_id = str(reaction.message.author.id)
+			with open('data.txt', encoding='utf-8') as file:
+				content = self.read_data(file)
+
+			for key, value in content.items():
+				if key == msg_author_id:
+					role_name = f'Grupa: {value[0]}'
+					role = discord.utils.get(reaction.message.guild.roles, name=role_name)
+					await user.add_roles(role)
+					await reaction.message.channel.send(f'Mozesz uzyc wzmianki: {role.mention}')
 
 	@commands.Cog.listener()
 	async def on_reaction_remove(self, reaction, user):
 		if reaction.emoji:
-			msg = reaction.message
-			role_name = f'Grupa: {msg.content}'
-			role = discord.utils.get(msg.guild.roles, name=role_name)
-			await user.remove_roles(role)
+			msg_author_id = str(reaction.message.author.id)
+			with open('data.txt', encoding='utf-8') as file:
+				content = self.read_data(file)
+
+			for key, value in content.items():
+				if key == msg_author_id:
+					role_name = f'Grupa: {value[0]}'
+					role = discord.utils.get(reaction.message.guild.roles, name=role_name)
+					await user.remove_roles(role)
 
 	@commands.has_permissions(manage_roles=True, ban_members=True)
 	@commands.command()
