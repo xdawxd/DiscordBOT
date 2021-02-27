@@ -108,7 +108,7 @@ class ExamCommands(commands.Cog):
 					await user.add_roles(role)
 					await reaction.message.channel.send(f'Mozesz uzyc wzmianki: {role.mention}')
 
-	@commands.Cog.listener()
+	@commands.Cog.listener()  # Create a function to avoid code repetition
 	async def on_reaction_remove(self, reaction, user):
 		if reaction.emoji:
 			msg_author_id = str(reaction.message.author.id)
