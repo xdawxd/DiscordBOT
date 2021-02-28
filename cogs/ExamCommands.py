@@ -94,32 +94,28 @@ class ExamCommands(commands.Cog):
 					if counter > 1:
 						await channel.send(f'{message} sa w \'{role_name}\'')
 
+	def role(self, reaction, user):
+		msg_author_id = str(reaction.message.author.id)
+		with open('data.txt', encoding='utf-8') as file:
+			content = self.read_data(file)
+
+		for key, value in content.items():
+			if key == msg_author_id:
+				role_name = f'Grupa: {value[0]}'
+				role = discord.utils.get(reaction.message.guild.roles, name=role_name)
+				return role
+
 	@commands.Cog.listener()
 	async def on_reaction_add(self, reaction, user):
 		if reaction.emoji and user != self.client.user:
-			msg_author_id = str(reaction.message.author.id)
-			with open('data.txt', encoding='utf-8') as file:
-				content = self.read_data(file)
+			role = self.role(reaction, user)
+			await user.add_roles(role)
+			await reaction.message.channel.send(f'Mozesz uzyc wzmianki: {role.mention}')
 
-			for key, value in content.items():
-				if key == msg_author_id:
-					role_name = f'Grupa: {value[0]}'
-					role = discord.utils.get(reaction.message.guild.roles, name=role_name)
-					await user.add_roles(role)
-					await reaction.message.channel.send(f'Mozesz uzyc wzmianki: {role.mention}')
-
-	@commands.Cog.listener()  # Create a function to avoid code repetition
+	@commands.Cog.listener()
 	async def on_reaction_remove(self, reaction, user):
-		if reaction.emoji:
-			msg_author_id = str(reaction.message.author.id)
-			with open('data.txt', encoding='utf-8') as file:
-				content = self.read_data(file)
-
-			for key, value in content.items():
-				if key == msg_author_id:
-					role_name = f'Grupa: {value[0]}'
-					role = discord.utils.get(reaction.message.guild.roles, name=role_name)
-					await user.remove_roles(role)
+			role = self.role(reaction, user)
+			await user.remove_roles(role)
 
 	@commands.has_permissions(manage_roles=True, ban_members=True)
 	@commands.command()
