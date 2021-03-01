@@ -5,33 +5,32 @@ from discord.ext import commands
 
 
 class ExamCommands(commands.Cog):
-	groups = {}
-
 	def __init__(self, client):
 		self.client = client
 
 	@staticmethod
-	def write_data(data, file):
-		for key, value in data.items():
-			file.write(f'{key}: {value}\n')
+	def write_data(data):
+		with open('data.txt', 'a+') as file:
+			for key, value in data.items():
+				file.write(f'{key}: {value}\n')
 
 	@staticmethod
-	def read_data(file):
-		file.seek(0)
-		f_formated = [i.strip().split(':') for i in file.readlines()]
-		content = {item[0]: item[1].strip() for item in f_formated}
-		return content
+	def read_data():
+		with open('data.txt') as file:
+			file.seek(0)
+			f_formated = [i.strip().split(':') for i in file.readlines()]
+			groups = {item[0]: item[1].strip() for item in f_formated}
+			return groups
 
 	def edit_messages(self, channel):  # TODO
 		pass
 
 	@commands.Cog.listener()
 	async def on_message(self, msg):
-		channel = self.client.get_channel(812498438699614209)  # id of an channel the message is send to
-		author_id, guild = msg.author.id, msg.guild
+		channel = self.client.get_channel(812498438699614209)
+		author_id, guild, emoji, data, groups = str(msg.author.id), msg.guild, '😎', {} , {}
 
 		role_names = [gn.name for gn in guild.roles]
-		emoji = '😎'
 
 		if msg.attachments:
 			if len(msg.content):
@@ -53,39 +52,31 @@ class ExamCommands(commands.Cog):
 				role = discord.utils.get(guild.roles, name=role_name)
 				await msg.author.add_roles(role)
 
-			with open('data.txt', 'a+', encoding='utf-8') as file:
-				if not os.path.getsize('data.txt'):
-					self.write_data(data, file)
+			# TODO -> make an if statement for repetative id's
+			self.write_data(data)
 
-				else:
-					content = self.read_data(file)
-					self.write_data(data, file)
+			try:
+				groups = self.read_data()
+			except FileNotFoundError:
+				pass
 
-					if author_id not in self.groups:
-						self.groups[str(author_id)] = msg.content
-
-					for key, value in content.items():
-						group = str(value)
-						if data[author_id] == group:
-							if key not in self.groups:
-								self.groups[key] = group
-
-					message, counter = '', 0
-					for user, group in self.groups.items():
-						if group == msg.content:
-							message += f'<@{user}>, '
-							counter += 1
-					if counter > 1:
-						await channel.send(f'{message} sa w \'{role_name}\'')
+			# TODO -> fix the callout 
+			message, counter = '', 0
+			for user, group in groups.items():
+				print(f'user: {user}, group: {group}')
+				if group == msg.content:
+					message += f'<@{user}>, '
+					counter += 1
+			if counter > 1:
+				await channel.send(f'{message} sa w \'{role_name}\'')
 
 	def role(self, reaction, user):
 		msg_author_id = str(reaction.message.author.id)
-		with open('data.txt', encoding='utf-8') as file:
-			content = self.read_data(file)
+		groups = self.read_data()
 
-		for key, value in content.items():
-			if key == msg_author_id:
-				role_name = f'Grupa: {value}'
+		for user_id, group in groups.items():
+			if user_id == msg_author_id:
+				role_name = f'Grupa: {group}'
 				role = discord.utils.get(reaction.message.guild.roles, name=role_name)
 				return role
 
