@@ -37,18 +37,17 @@ class ExamCommands(commands.Cog):
 	@commands.Cog.listener()
 	async def on_message(self, msg):
 		channel = self.client.get_channel(812498438699614209)  # id of an channel the message is send to
-		author_id = msg.author.id
-		guild = msg.guild
+		author_id, guild = msg.author.id, msg.guild
 
 		role_names = [gn.name for gn in guild.roles]
 		emoji = random.choice(self.emojis)
 
 		if msg.attachments:
-			if msg.attachments and len(msg.content):
+			if len(msg.content):
 				data = {author_id: [msg.content, emoji]}
 				role_name = f'Grupa: {msg.content}'
 
-			if msg.attachments and len(msg.content) == 0:
+			if len(msg.content) == 0:
 				random_group = random.randint(1, 1000000)
 				data = {author_id: [random_group, emoji]}
 				role_name = f'Grupa: {random_group}'
@@ -86,8 +85,7 @@ class ExamCommands(commands.Cog):
 							self.edit_data(file, str(author_id), value[1])
 
 					users = [user for (user, group) in self.groups.items()]
-					message = ''
-					counter = 0
+					message, counter = '', 0
 					for user in users:
 						message += f'<@{user}>, '
 						counter += 1
@@ -117,8 +115,8 @@ class ExamCommands(commands.Cog):
 			role = self.role(reaction, user)
 			await user.remove_roles(role)
 
-	@commands.has_permissions(manage_roles=True, ban_members=True)
 	@commands.command()
+	@commands.has_permissions(manage_roles=True, ban_members=True)
 	async def delete_roles(self, ctx):
 		guild = ctx.message.guild
 		roles = [role.name for role in ctx.message.guild.roles]
